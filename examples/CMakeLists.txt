@@ -72,6 +72,7 @@ target_link_libraries(cpp-tutorial-2-streams ${DEPENDENCIES})
 add_executable(cpp-tutorial-3-pointcloud cpp-tutorial-3-pointcloud.cpp)
 target_link_libraries(cpp-tutorial-3-pointcloud ${DEPENDENCIES})
 
+
 # Examples
 add_executable(cpp-alignimages cpp-alignimages.cpp)
 target_link_libraries(cpp-alignimages ${DEPENDENCIES})
@@ -109,6 +110,9 @@ target_link_libraries(cpp-restart ${DEPENDENCIES})
 add_executable(cpp-stride cpp-stride.cpp)
 target_link_libraries(cpp-stride ${DEPENDENCIES})
 
+add_executable(cpp-camera-data cpp-camera-data.cpp)
+target_link_libraries(cpp-camera-data ${DEPENDENCIES})
+
 install(
     TARGETS
     c-tutorial-1-depth
@@ -131,6 +135,7 @@ install(
     cpp-pointcloud
     cpp-restart
     cpp-stride
+    cpp-camera-data
 
     RUNTIME DESTINATION
     ${CMAKE_INSTALL_BINDIR}

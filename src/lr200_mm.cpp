@@ -322,22 +322,21 @@ namespace rsimpl
 
         motion_module_calibration intrinsic;
 
-        std::ifstream cal("/intel/euclid/config/calibration.json");
+        std::ifstream cal("/intel/euclid/config/calibrationResult.json");
         std::string str((std::istreambuf_iterator<char>(cal)),std::istreambuf_iterator<char>());
         const char *json = str.c_str();
 
         rapidjson::Document d;
         d.Parse(json);
-        const rapidjson::Value& cam = d["cameras"];
-        auto& fisheye = cam[0];
-        auto& center = fisheye["center_px"];
-        double cx = center[0].GetDouble();
-        double cy = center[1].GetDouble();
-        auto& focal_length = fisheye["focal_length_px"];
-        double fx = focal_length[0].GetDouble();
-        double fy = focal_length[1].GetDouble();
+        //const rapidjson::Value& cam = d["cameras"];
+        //auto& fisheye = cam[0];
+        //auto& center = fisheye["center_px"];
+        double cx = d["Cx"].GetDouble();
+        double cy = d["Cy"].GetDouble();
+        double fx = d["Fx"].GetDouble();
+        double fy = d["Fy"].GetDouble();
 
-        double distortion = fisheye["distortion"]["w"].GetDouble();
+        double distortion = d["Kw"].GetDouble();
 
         intrinsic.calib.fe_intrinsic.kf[0] = fx;
         intrinsic.calib.fe_intrinsic.kf[1] = 0;
@@ -352,14 +351,10 @@ namespace rsimpl
         intrinsic.calib.fe_intrinsic.distf[1] = intrinsic.calib.fe_intrinsic.distf[2]
                 = intrinsic.calib.fe_intrinsic.distf[3] =intrinsic.calib.fe_intrinsic.distf[4] = 0;
 
-        auto& imus = d["imus"];
+
         {
 
-            auto& accel = imus[0]["accelerometer"];
-            auto& scale = accel["scale_and_alignment"];
-            auto& bias = accel["bias"];
-            auto& bias_var = accel["bias_variance"];
-            auto& noise_var = accel["noise_variance"];
+            auto& scale = d["accelerometerTransform"];
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[0][0] = scale[0].GetDouble();
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[1][0] = scale[1].GetDouble();
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[2][0] = scale[2].GetDouble();
@@ -369,24 +364,21 @@ namespace rsimpl
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[0][2] = scale[6].GetDouble();
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[1][2] = scale[7].GetDouble();
             intrinsic.calib.imu_intrinsic.acc_intrinsic.val[2][2] = scale[8].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[0][3] = bias[0].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[1][3] = bias[1].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[2][3] = bias[2].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_bias_variance[0] = bias_var[0].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_bias_variance[1] = bias_var[1].GetDouble();
-            intrinsic.calib.imu_intrinsic.acc_bias_variance[2] = bias_var[2].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[0][3] = d["abias0"].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[1][3] = d["abias1"].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_intrinsic.val[2][3] = d["abias2"].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_bias_variance[0] = d["abiasvar0"].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_bias_variance[1] = d["abiasvar0"].GetDouble();
+            intrinsic.calib.imu_intrinsic.acc_bias_variance[2] = d["abiasvar0"].GetDouble();
             intrinsic.calib.imu_intrinsic.acc_noise_variance[0] =
                 intrinsic.calib.imu_intrinsic.acc_noise_variance[1]=
-                    intrinsic.calib.imu_intrinsic.acc_noise_variance[2] = noise_var.GetDouble();
+                    intrinsic.calib.imu_intrinsic.acc_noise_variance[2] = d["aMeasVar"].GetDouble();
 
 
         }
         {
-            auto& gyro = imus[0]["gyroscope"];
-            auto& scale = gyro["scale_and_alignment"];
-            auto& bias = gyro["bias"];
-            auto& bias_var = gyro["bias_variance"];
-            auto& noise_var = gyro["noise_variance"];
+            auto& scale = d["gyroscopeTransform"];
+
 
             intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[0][0] = scale[0].GetDouble();
             intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[1][0] = scale[1].GetDouble();
@@ -397,47 +389,52 @@ namespace rsimpl
             intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[0][2] = scale[6].GetDouble();
             intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[1][2] = scale[7].GetDouble();
             intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[2][2] = scale[8].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[0][3] = bias[0].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[1][3] = bias[1].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[2][3] = bias[2].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_bias_variance[0] = bias_var[0].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_bias_variance[1] = bias_var[1].GetDouble();
-            intrinsic.calib.imu_intrinsic.gyro_bias_variance[2] = bias_var[2].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[0][3] = d["wbias0"].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[1][3] = d["wbias1"].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_intrinsic.val[2][3] = d["wbias2"].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_bias_variance[0] = d["wbiasvar0"].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_bias_variance[1] = d["wbiasvar1"].GetDouble();
+            intrinsic.calib.imu_intrinsic.gyro_bias_variance[2] = d["wbiasvar2"].GetDouble();
             intrinsic.calib.imu_intrinsic.gyro_noise_variance[0] =
                 intrinsic.calib.imu_intrinsic.gyro_noise_variance[1]=
-                    intrinsic.calib.imu_intrinsic.gyro_noise_variance[2] = noise_var.GetDouble();
+                    intrinsic.calib.imu_intrinsic.gyro_noise_variance[2] = d["wMeasVar"].GetDouble();
 
         }
 
         /* calculating extrinsics */
-         pose fisheye_to_world, imu_to_world,depth_to_world;
+         pose imu_to_fe, imu_to_depth;
         {
-            auto& T = fisheye["extrinsics"]["T"];
-            auto& W = fisheye["extrinsics"]["W"];
-            fisheye_to_world = pose { {W[0].GetDouble(), W[1].GetDouble(), W[2].GetDouble()},
-                        {T[0].GetDouble(),T[1].GetDouble(),T[2].GetDouble()} };
-        }
-        {
-            auto& T = imus[0]["extrinsics"]["T"];
-            auto& W = imus[0]["extrinsics"]["W"];
-            imu_to_world = pose { {W[0].GetDouble(), W[1].GetDouble(), W[2].GetDouble()},
-                        {T[0].GetDouble(),T[1].GetDouble(),T[2].GetDouble()} };
-        }
 
-        {
-            auto& depth = d["depths"][0];
-            auto& T = depth["extrinsics"]["T"];
-            auto& W = depth["extrinsics"]["W"];
-            depth_to_world = pose { {W[0].GetDouble(), W[1].GetDouble(), W[2].GetDouble()},
-                        {T[0].GetDouble(),T[1].GetDouble(),T[2].GetDouble()} };
+
+
+            imu_to_fe = pose { {d["Rot0"].GetDouble(),d["Rot1"].GetDouble(),d["Rot2"].GetDouble(),
+                                d["Rot3"].GetDouble(),d["Rot4"].GetDouble(),d["Rot5"].GetDouble(),
+                                d["Rot6"].GetDouble(),d["Rot7"].GetDouble(),d["Rot8"].GetDouble()},
+                               {d["Tc0"].GetDouble(),d["Tc1"].GetDouble(),d["Tc2"].GetDouble()} };
+
+
         }
 
 
-        pose fe_to_imu = fisheye_to_world * inverse(imu_to_world);
-        pose fe_to_depth = fisheye_to_world * inverse(depth_to_world);
-        pose depth_to_imu = depth_to_world * inverse(imu_to_world);
-        memcpy(intrinsic.calib.mm_extrinsic.fe_to_imu.rotation ,reinterpret_cast<float(&)[9]>(fe_to_imu.position),sizeof(float)*9);
-        memcpy(intrinsic.calib.mm_extrinsic.fe_to_imu.translation ,reinterpret_cast<float(&)[3]>(fe_to_imu.orientation),sizeof(float)*3);
+        {
+            auto& depth = d["depth"];
+
+
+
+            imu_to_depth = pose  {{depth["Rot0"].GetDouble(),depth["Rot1"].GetDouble(),depth["Rot2"].GetDouble(),
+                                   depth["Rot3"].GetDouble(),depth["Rot4"].GetDouble(),depth["Rot5"].GetDouble(),
+                                   depth["Rot6"].GetDouble(),depth["Rot7"].GetDouble(),depth["Rot8"].GetDouble()},
+                                  {depth["Tc0"].GetDouble(),depth["Tc1"].GetDouble(),depth["Tc2"].GetDouble()} };
+        }
+
+
+       // pose fe_to_imu = fisheye_to_imu; //fisheye_to_world * inverse(imu_to_world);
+        pose fe_to_imu = inverse(imu_to_fe);
+        pose fe_to_depth = inverse(imu_to_fe)*imu_to_depth;
+        pose depth_to_imu = inverse(imu_to_depth);
+        //pose depth_to_imu =
+        memcpy(intrinsic.calib.mm_extrinsic.fe_to_imu.rotation ,reinterpret_cast<float(&)[9]>(fe_to_imu.orientation),sizeof(float)*9);
+        memcpy(intrinsic.calib.mm_extrinsic.fe_to_imu.translation ,reinterpret_cast<float(&)[3]>(fe_to_imu.position),sizeof(float)*3);
 
         memcpy(intrinsic.calib.mm_extrinsic.fe_to_depth.rotation , reinterpret_cast<float(&)[9]>(fe_to_depth.orientation),sizeof(float)*9);
         memcpy(intrinsic.calib.mm_extrinsic.fe_to_depth.translation , reinterpret_cast<float(&)[3]>(fe_to_depth.position),sizeof(float)*3);
@@ -467,15 +464,26 @@ namespace rsimpl
         auto cam_info = ds::read_camera_info(*device);
         
         ds_device::set_common_ds_config(device, info, cam_info);
-        motion_module_calibration fisheye_intrinsic = read_fisheye_intrinsic("/intel/euclid/config/calibration.json");
+        motion_module_calibration fisheye_intrinsic = read_fisheye_intrinsic("/intel/euclid/config/calibrationResult.json");
+        std::cout <<"Intrinsics: " << fisheye_intrinsic.calib.imu_intrinsic.acc_bias_variance[2] << std::endl;
+        auto fe_extrinsic = fisheye_intrinsic.calib.mm_extrinsic;
+        pose fisheye_to_depth = { reinterpret_cast<float3x3 &>(fe_extrinsic.fe_to_depth.rotation), reinterpret_cast<float3&>(fe_extrinsic.fe_to_depth.translation) };
+        auto depth_to_fisheye = inverse(fisheye_to_depth);
+        info.stream_poses[RS_STREAM_FISHEYE] = depth_to_fisheye;
+
+        rs_intrinsics rs_intrinsics = fisheye_intrinsic.calib.fe_intrinsic;
+
+
+        info.subdevice_modes.push_back({ 3, { 640, 480 }, pf_raw8, 30, rs_intrinsics, { /*TODO:ask if we need rect_modes*/ }, { 0 } });
+
 
         // lr200_mm provides Full HD raw 16 format as well for the color stream
-        info.subdevice_modes.push_back({ 2,{ 1920, 1080 }, pf_rw16, 30,  fisheye_intrinsic.calib.fe_intrinsic,{ cam_info.calibration.modesThird[0][0] },{ 0 } });
+
         //MOTION:
         //info.capabilities_vector.push_back(RS_CAPABILITIES_MOTION_MODULE_FW_UPDATE);
 
         info.stream_subdevices[RS_STREAM_FISHEYE] = 3;
-        info.presets[RS_STREAM_FISHEYE][RS_PRESET_BEST_QUALITY] =
+        info.presets[RS_STREAM_FISHEYE][RS_PRESET_BEST_QUALITY] = 
         info.presets[RS_STREAM_FISHEYE][RS_PRESET_LARGEST_IMAGE] =
         info.presets[RS_STREAM_FISHEYE][RS_PRESET_HIGHEST_FRAMERATE] = { true, 640, 480, RS_FORMAT_RAW8,   30 };
         //info.subdevice_modes.push_back({ 3, { 640, 480 }, pf_raw8, 30, rs_intrinsics, { /*TODO:ask if we need rect_modes*/ }, { 0 } });
@@ -484,7 +492,7 @@ namespace rsimpl
         info.options.push_back({ RS_OPTION_FISHEYE_STROBE,                          0,  1,   1,  0  });
         info.options.push_back({ RS_OPTION_FISHEYE_EXTERNAL_TRIGGER,                0,  1,   1,  0  });
         info.options.push_back({ RS_OPTION_FISHEYE_ENABLE_AUTO_EXPOSURE,            0,  1,   1,  1  });
-        info.options.push_back({ RS_OPTION_FISHEYE_AUTO_EXPOSURE_MODE,              0,  2,   1,  0  });
+        info.options.push_back({ RS_OPTION_FISHEYE_AUTO_EXPOSURE_MODE,              0,  2,   1,  0  }); 
         info.options.push_back({ RS_OPTION_FISHEYE_AUTO_EXPOSURE_ANTIFLICKER_RATE,  50, 60,  10, 60 });
         info.options.push_back({ RS_OPTION_FISHEYE_AUTO_EXPOSURE_PIXEL_SAMPLE_RATE, 1,  3,   1,  1  });
         info.options.push_back({ RS_OPTION_FISHEYE_AUTO_EXPOSURE_SKIP_FRAMES,       0,  3,   1,  2  });
@@ -494,6 +502,8 @@ namespace rsimpl
         info.capabilities_vector.push_back({ RS_CAPABILITIES_MOTION_EVENTS, { 1, 15, 5, 0 }, firmware_version::any(), RS_CAMERA_INFO_MOTION_MODULE_FIRMWARE_VERSION });
         info.camera_info[RS_CAMERA_INFO_MOTION_MODULE_FIRMWARE_VERSION] = "14.0.2";
         info.supported_metadata_vector.push_back(RS_FRAME_METADATA_ACTUAL_EXPOSURE);
+        info.subdevice_modes.push_back({ 2,{ 1920, 1080 }, pf_rw16, 30,  fisheye_intrinsic.calib.fe_intrinsic,{ cam_info.calibration.modesThird[0][0] },{ 0 } });
+
         return std::make_shared<lr200_mm_camera>(device, info,fisheye_intrinsic);
     }
     

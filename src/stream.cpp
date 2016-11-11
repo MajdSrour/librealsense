@@ -90,9 +90,9 @@ rs_intrinsics native_stream::get_intrinsics() const
     ;//std::cout << "get_intrinsics was called!" << std::endl;
     ;//std::cout << "stream: " << stream << std::endl;
     ;//std::cout << "check: " << RS_STREAM_FISHEYE << std::endl;
-    if(stream == RS_STREAM_FISHEYE) {
+    /*if(stream == RS_STREAM_FISHEYE) {
         return{ 640, 480, 640/2, 480/2, 2, 2, RS_DISTORTION_NONE, {0,0,0,0,0} };
-    }
+    }*/
     if (!validator.validate_intrinsics(stream))
     {
         LOG_ERROR("The intrinsic of " << get_stream_type() << " is not valid");
