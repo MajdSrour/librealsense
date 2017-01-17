@@ -17,7 +17,7 @@ using namespace rsimpl::motion_module;
 
 const int MAX_FRAME_QUEUE_SIZE = 20;
 const int MAX_EVENT_QUEUE_SIZE = 100;
-const int MAX_EVENT_TINE_OUT   = 35;
+const int MAX_EVENT_TINE_OUT   = 30;
 
 rs_device_base::rs_device_base(std::shared_ptr<rsimpl::uvc::device> device, const rsimpl::static_device_info & info, calibration_validator validator) : device(device), config(info),
     depth(config, RS_STREAM_DEPTH, validator), color(config, RS_STREAM_COLOR, validator), infrared(config, RS_STREAM_INFRARED, validator), infrared2(config, RS_STREAM_INFRARED2, validator), fisheye(config, RS_STREAM_FISHEYE, validator),
@@ -782,12 +782,22 @@ void rs_device_base::initialize_motion() {
 
 void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
        static int64_t frameCount = 1;
+<<<<<<< HEAD
     if(!fisheye_started) {
         motion_device->returnFisheyeBuffer(frame);
         return;
     }
         frame_archive::frame_additional_data additional_data( (frame->header.timestamp)/1000000.0,
             frameCount++,
+=======
+      // std::cout << "fisheyeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" << std::endl;
+    if(!fisheye_started || frame->header.seq < 10) {
+        motion_device->returnFisheyeBuffer(frame);
+        return;
+    }
+        frame_archive::frame_additional_data additional_data( frame->header.timestamp,
+            frame->header.seq-3,
+>>>>>>> 7a226c8e2c8cf9db4f8a1777345271ca788778d7
             0,
             frame->width,
             frame->height,
