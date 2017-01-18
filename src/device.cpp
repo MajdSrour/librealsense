@@ -782,22 +782,13 @@ void rs_device_base::initialize_motion() {
 
 void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
        static int64_t frameCount = 1;
-<<<<<<< HEAD
-    if(!fisheye_started) {
-        motion_device->returnFisheyeBuffer(frame);
-        return;
-    }
-        frame_archive::frame_additional_data additional_data( (frame->header.timestamp)/1000000.0,
-            frameCount++,
-=======
-      // std::cout << "fisheyeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" << std::endl;
     if(!fisheye_started || frame->header.seq < 10) {
         motion_device->returnFisheyeBuffer(frame);
         return;
     }
-        frame_archive::frame_additional_data additional_data( frame->header.timestamp,
+
+        frame_archive::frame_additional_data additional_data( (frame->header.timestamp)/1000000.0,
             frame->header.seq-3,
->>>>>>> 7a226c8e2c8cf9db4f8a1777345271ca788778d7
             0,
             frame->width,
             frame->height,
@@ -810,7 +801,7 @@ void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
             0,
             config.info.supported_metadata_vector,
             33.33);//frame->exposure*1000.0);
-
+        std::cout << "expo: " << frame->exposure << std::endl;
         additional_data.timestamp_domain = RS_TIMESTAMP_DOMAIN_MICROCONTROLLER;
         //std::cout <<"Timestamp: " << frame->header.timestamp << ", calculated: " << (uint64_t)(additional_data.timestamp) << std::endl;
         //std::cout << "Got fisheyeCallback! 1   " <<  frame->width << "," << frame->height << std::endl;
