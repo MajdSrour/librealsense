@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <motion/MotionAPI-slim.h>
+
 #include <iostream>
 namespace rsimpl
 {
