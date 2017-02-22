@@ -141,7 +141,7 @@ namespace rsimpl
             return;
         motion_initialized = true;
         std::cout << "starting motion!" << std::endl;
-        motion::MotionStatus status;
+
         motion::MotionDeviceManager *deviceManager = motion::MotionDeviceManager::instance();
         deviceManager->AddMotionDeviceDescriptor(motion::motionDevices[0]);
 
@@ -149,7 +149,7 @@ namespace rsimpl
 
 
         profile.imuBufferDepth = 1;
-        profile.fisheyeBufferDepth = 10;
+        profile.fisheyeBufferDepth = 20;
         profile.syncIMU = false;
         profile.gyro.enable = true;
         profile.gyro.fps = motion::MotionProfile::Gyro::FPS_200;
@@ -164,17 +164,15 @@ namespace rsimpl
 
         profile.depth.enable = true;
 
-        profile.ext1.enable = true;
-        profile.ext2.enable = true;
+        profile.ext1.enable = false;
+        profile.ext2.enable = false;
 
-        profile.multiControllerSync.enable = true;
+        profile.multiControllerSync.enable = false;
 
-        profile.multiControllerSync.master = true; //uctl-0 is master in alloy
+        profile.multiControllerSync.master = false; //uctl-0 is master in alloy
         motion_initialized = true;
 
-        status = motion_device->start(profile);
-        std::cout << "Status: " << status << std::endl;
-
+        motion_device->start(profile);
         //enable_fisheye_stream();
 
 
@@ -182,9 +180,7 @@ namespace rsimpl
     void lr200_mm_camera::enable_fisheye_stream() {
         if(fisheye_started)
                 return;
-        motion::MotionStatus status;
-        status = motion_device->startFisheyeCamera();
-        std::cout << "Status: " << status << std::endl;
+        motion_device->startFisheyeCamera();
         fisheye_started = true;
     }
 

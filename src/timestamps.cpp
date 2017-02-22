@@ -70,6 +70,7 @@ bool concurrent_queue::correct( frame_interface& frame)
     if (it != data_queue.end())
     {
         if(latest_timestamps[frame.get_stream_type()] != -1 && it->timestamp < latest_timestamps[frame.get_stream_type()]) {
+            std::cout << "dropping in order" << std::endl;
             return false;
         }
         double ts = it->timestamp;
@@ -77,6 +78,7 @@ bool concurrent_queue::correct( frame_interface& frame)
         latest_timestamps[frame.get_stream_type()] = ts;
         return true;
     }
+
     return false;
 }
 
@@ -122,19 +124,24 @@ bool timestamp_corrector::correct_timestamp(frame_interface& frame, rs_stream st
 {
 
 
-    bool res;
+    bool res = false;
     rs_event_source source_id;
     update_source_id(source_id, stream);
+    unique_lock<mutex> lock(mtx);
 
-
-    /*if (!(res = data_queue[source_id].correct(frame)))
+    if (!(res = data_queue[source_id].correct(frame)))
     {
-        const auto ready = [&]() { res =  data_queue[source_id].correct(frame); };
-        res = cv.wait_for(lock, std::chrono::milliseconds((*events_timeout)), ready);
-        cv.wait_for(lock,chrono::duration::milliseconds(*event_timeout));
-        cout << "got new res" << std::endl;
+        const auto ready = [&]() { return data_queue[source_id].correct(frame); };
+        res = cv.wait_for(lock,std::chrono::milliseconds(*events_timeout),ready);
 
-    }*/
+    }
+    if (res) {
+        frame.set_timestamp_domain(RS_TIMESTAMP_DOMAIN_MICROCONTROLLER);
+    } else {
+        //std::cout << stream << " - dropping can't sync" << std::endl;
+    }
+    return res;
+    /*
 
     auto start_time = std::chrono::high_resolution_clock::now();
    // unique_lock<mutex> lock(mtx);
@@ -152,6 +159,8 @@ bool timestamp_corrector::correct_timestamp(frame_interface& frame, rs_stream st
     if (res)
     {
         frame.set_timestamp_domain(RS_TIMESTAMP_DOMAIN_MICROCONTROLLER);
+    } else {
+        std::cout << stream << " - dropping can't sync" << std::endl;
     }
-    return res;
+    return res;*/
 }

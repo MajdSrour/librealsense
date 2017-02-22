@@ -15,8 +15,8 @@
 using namespace rsimpl;
 using namespace rsimpl::motion_module;
 
-const int MAX_FRAME_QUEUE_SIZE = 20;
-const int MAX_EVENT_QUEUE_SIZE = 100;
+const int MAX_FRAME_QUEUE_SIZE = 30;
+const int MAX_EVENT_QUEUE_SIZE = 400;
 const int MAX_EVENT_TINE_OUT   = 30;
 
 rs_device_base::rs_device_base(std::shared_ptr<rsimpl::uvc::device> device, const rsimpl::static_device_info & info, calibration_validator validator) : device(device), config(info),
