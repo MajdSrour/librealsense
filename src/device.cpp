@@ -756,7 +756,7 @@ const char * rs_device_base::get_usb_port_id() const
         // TODO -replace hard-coded value 3 which stands for fisheye subdevice   
 
         rs_timestamp_data imu_timestamp;
-        imu_timestamp.timestamp = frame->header.timestamp/1000000.0;
+        imu_timestamp.timestamp = frame->header.timestamp;
         imu_timestamp.source_id = (frame->header.type == motion::MOTION_SOURCE_GYRO ? RS_EVENT_IMU_GYRO : RS_EVENT_IMU_ACCEL);
         imu_timestamp.frame_number = frame->header.seq;
         
@@ -787,7 +787,7 @@ void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
         return;
     }
 
-        frame_archive::frame_additional_data additional_data( (frame->header.timestamp)/1000000.0,
+        frame_archive::frame_additional_data additional_data( (frame->header.timestamp),
             frame->header.seq-3,
             0,
             frame->width,
@@ -836,7 +836,7 @@ void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
             if(frame->header.seq < 5)
                 return;
             //std::cout << "timestamp: " << frame->header.seq-3 << std::endl;
-            archive->on_timestamp({frame->header.timestamp/1000000.0,RS_EVENT_IMU_DEPTH_CAM,frame->header.seq-3});
+            archive->on_timestamp({frame->header.timestamp,RS_EVENT_IMU_DEPTH_CAM,frame->header.seq-3});
         }
     }
     void rs_device_base::notifyCallback(uint32_t status, uint8_t *buf, uint32_t size) {
