@@ -94,7 +94,6 @@ byte * frame_archive::alloc_frame(rs_stream stream, const frame_additional_data&
 
         size = modes[stream].get_image_size(stream);
     }
-    //const size_t size =307200; //TODO: majd//= modes[stream].get_image_size(stream);
     {
         std::lock_guard<std::recursive_mutex> guard(mutex);
 

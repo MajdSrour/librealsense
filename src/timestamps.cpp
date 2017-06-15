@@ -137,30 +137,7 @@ bool timestamp_corrector::correct_timestamp(frame_interface& frame, rs_stream st
     }
     if (res) {
         frame.set_timestamp_domain(RS_TIMESTAMP_DOMAIN_MICROCONTROLLER);
-    } else {
-        //std::cout << stream << " - dropping can't sync" << std::endl;
     }
     return res;
-    /*
-
-    auto start_time = std::chrono::high_resolution_clock::now();
-   // unique_lock<mutex> lock(mtx);
-    while (!res && std::chrono::duration_cast<chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time).count() < (*events_timeout)) {
-
-       // lock.lock();
-       // std::cout << "Searching for: " << frame.get_frame_number() << std::endl;
-        res = data_queue[source_id].correct(frame);
-        //cv.wait_for(lock,std::chrono::milliseconds((*events_timeout)));
-       //
-       // lock.unlock();
-       // usleep(1000);
-    }
-    //lock.unlock();
-    if (res)
-    {
-        frame.set_timestamp_domain(RS_TIMESTAMP_DOMAIN_MICROCONTROLLER);
-    } else {
-        std::cout << stream << " - dropping can't sync" << std::endl;
-    }
-    return res;*/
+    
 }

@@ -249,7 +249,6 @@ void rs_device_base::stop(rs_source source)
     if (source == RS_SOURCE_VIDEO)
     {
         stop_video_streaming();
-        //stop(RS_SOURCE_MOTION_TRACKING);
     }
     else if (source == RS_SOURCE_MOTION_TRACKING)
     {
@@ -341,7 +340,6 @@ void rs_device_base::start_video_streaming(bool is_mipi)
     auto archive = std::make_shared<syncronizing_archive>(selected_modes, select_key_stream(selected_modes), &max_publish_list_size, &event_queue_size, &events_timeout, capture_start_time);
 
     for(auto & s : native_streams) {
-        //#TODO: majd check if needed?
         if (s->get_stream_type() == RS_STREAM_FISHEYE) {
 
             s->archive = archive;
@@ -394,7 +392,6 @@ void rs_device_base::start_video_streaming(bool is_mipi)
             auto frame_counter = timestamp_reader->get_frame_counter(mode_selection.mode, frame);
             auto recieved_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - capture_start_time).count();
             if(frame_counter == 0) {
-                //std::cout << "Drop: " << drops++ << std::endl;
                 return;
             }
             auto requires_processing = mode_selection.requires_processing();
@@ -456,16 +453,12 @@ void rs_device_base::start_video_streaming(bool is_mipi)
 
                 // Obtain buffers for unpacking the frame
                 dest.push_back(archive->alloc_frame(output.first, additional_data, requires_processing));
-                //std::cout << "timestamp: " << output.first << " " << frame_counter << std::endl;
 
-              // if (motion_module_ready) // try to correct timestamp only if motion module is enabled
-                //{
-                    if(!archive->correct_timestamp(output.first)) {
-                        archive->release_frame_ref(archive->track_frame(output.first));
-                        return;
-                    }
+                if(!archive->correct_timestamp(output.first)) {
+                    archive->release_frame_ref(archive->track_frame(output.first));
+                    return;
+                }
 
-                //}
             }
             // Unpack the frame
             if (requires_processing)
@@ -637,12 +630,10 @@ bool rs_device_base::supports(rs_capabilities capability) const
         if (supported.capability == capability)
         {
             found = true;
-            //TODO: majd
             if(capability == RS_CAPABILITIES_MOTION_EVENTS)
                 break;
             if(capability == RS_CAPABILITIES_FISH_EYE)
                 return true;
-            //;//std::cout << "Supports 2" << std::endl;
             firmware_version firmware(get_camera_info(supported.firmware_type));
             if (!firmware.is_between(supported.from, supported.until)) // unsupported due to versioning constraint
             {
@@ -747,7 +738,6 @@ const char * rs_device_base::get_usb_port_id() const
 
 
  void rs_device_base::sensorCallback(motion::MotionSensorFrame* frame, int numFrames) {
-       // ;//std::cout << "Got sensorCallback!" << std::endl;
 
        if(!data_acquisition_active)
             return;
@@ -803,8 +793,6 @@ void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
             frame->exposure);
 
         additional_data.timestamp_domain = RS_TIMESTAMP_DOMAIN_MICROCONTROLLER;
-        //std::cout <<"Timestamp: " << frame->header.timestamp << ", calculated: " << (uint64_t)(additional_data.timestamp) << std::endl;
-        //std::cout << "Got fisheyeCallback! 1   " <<  frame->width << "," << frame->height << std::endl;
         byte* frameData = archive->alloc_frame(RS_STREAM_FISHEYE, additional_data, true); // Sergey: this allocates object for the frame
 
         memcpy(frameData,frame->data,frame->width*frame->height);
@@ -831,11 +819,9 @@ void rs_device_base::fisheyeCallback(motion::MotionFisheyeFrame* frame) {
 
     }
     void rs_device_base::timestampCallback(motion::MotionTimestampFrame *frame)  {
-        ;//std::cout << "Got timestamp: " << frame->header.type << std::endl;
         if(frame->header.type == motion::MOTION_SOURCE_DEPTH) {
             if(frame->header.seq < 5)
                 return;
-            //std::cout << "timestamp: " << frame->header.seq-3 << std::endl;
             archive->on_timestamp({frame->header.timestamp/1000000.0,RS_EVENT_IMU_DEPTH_CAM,frame->header.seq-3});
         }
     }

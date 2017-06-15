@@ -60,7 +60,6 @@ namespace rsimpl
             }
 
             else if (number < last_number) {
-                //std::cout << "Frame: " << number << ", prev: " << last_number << std::endl;
                 mtx.unlock();
                 return 0;
             }
