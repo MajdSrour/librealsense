@@ -97,7 +97,7 @@ namespace rsimpl
             case RS_OPTION_HARDWARE_LOGGER_ENABLED:                   break; 
 
                 // Default will be handled by parent implementation
-            default: base_opt.push_back(options[i]); base_opt_val.push_back(i); break;
+            default: base_opt.push_back(options[i]); base_opt_index.push_back(i); break;
             }
         }
 
